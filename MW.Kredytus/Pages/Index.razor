@@ -1,0 +1,152 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?"/>
+
+<h2>Parametry kredytu</h2>
+Pozostała kwota do spłaty: <input @bind="_mortgageParams.RemainingAmount" type="number" /><br />
+Data ostatniej raty: <input @bind="_mortgageParams.LastInstallmentDate" type="date" /><br />
+Marża banku: <input @bind="_mortgageParams.BankMargin" type="number" />%<br />
+Stopa bazowa: <input @bind="_mortgageParams.BaseRate" type="number" />%<br />
+
+<h3>Prowizja za wcześniejszą spłatę</h3>
+Prowizja za wcześniejszą spłatę: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
+Prowizja za wcześniejszą spłatę do dnia: <input @bind="_mortgageParams.EarlyRepaymentCommissionEndDate" type="date" /><br />
+
+<h3>Ubezpieczenie niskiego LTV</h3>
+Podwyższenie raty: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
+Próg LTV: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
+Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
+
+<button @onclick="PrepareTable">Wygeneruj</button>
+
+@if (_installments.Any())
+{
+    <p>
+        Suma odsetek: @Math.Round(_installments.Sum(x => x.InterestRepayment), 2)
+    </p> 
+    
+    <table>
+        <thead>
+        <td>Numer raty</td>
+        <td>Data raty</td>
+        <td>Rata kapitałowa</td>
+        <td>Rata odsetkowa</td>
+        <td>Rata razem</td>
+        <td>Pozostało do spłaty</td>
+        </thead>
+        <tbody>
+        @foreach (var installment in _installments)
+        {
+            <tr>
+                <td>@installment.InstallmentNumber</td>
+                <td>@installment.Date</td>
+                <td>@Math.Round(installment.CapitalRepayment, 2)</td>
+                <td>@Math.Round(installment.InterestRepayment, 2)</td>
+                <td>@Math.Round(installment.TotalAmount, 2)</td>
+                <td>@Math.Round(installment.RemainingAmount, 2)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Installment> _installments = new List<Installment>();
+    
+    private MortgageParams _mortgageParams = new MortgageParams()
+    {
+        RemainingAmount = 685_467,
+        LastInstallmentDate = new DateOnly(2052, 02, 05),
+        BankMargin = 1.65m,
+        BaseRate = 7.30m,
+        EarlyRepaymentCommission = 2.0m,
+        EarlyRepaymentCommissionEndDate = new DateOnly(2024, 10, 07),
+        LowLtvThreshold = 0.8m,
+        LowLtvInterestIncrease = 0.2m,
+        CollateralValue = 760_000m
+    };
+
+    public class MortgageParams
+    {
+        public decimal RemainingAmount { get; set; }
+
+        public DateOnly LastInstallmentDate { get; set; }
+        
+        public decimal BankMargin { get; set; }
+        
+        public decimal BaseRate { get; set; }
+        
+        public decimal EarlyRepaymentCommission { get; set; }
+        
+        public DateOnly EarlyRepaymentCommissionEndDate { get; set; }
+        
+        public decimal LowLtvThreshold { get; set; }
+        public decimal LowLtvInterestIncrease { get; set; }
+        public decimal CollateralValue { get; set; }
+    }
+
+    public class Installment
+    {
+        public int InstallmentNumber { get; set; }
+        public DateOnly Date { get; set; }
+        public decimal RemainingAmount { set; get; }
+        public decimal BaseRate { get; set; }
+        public decimal CapitalRepayment => TotalAmount - InterestRepayment;
+        public decimal InterestRepayment { get; set; }
+        
+        public decimal TotalAmount { get; set; }
+    }
+
+    private void PrepareTable()
+    {
+        _installments = new List<Installment>();
+        var date = GetNextInstallmentDate(DateOnly.FromDateTime(DateTime.Now.Date));
+        while (date <= _mortgageParams.LastInstallmentDate)
+        {
+            date = GetNextInstallmentDate(date);
+            var installment = new Installment()
+            {
+                Date = date
+            };
+            _installments.Add(installment);
+        }
+        for (var installmentNumber = 0; installmentNumber < _installments.Count; installmentNumber++)
+        {
+            var previousRemainingAmount = installmentNumber == 0 ? _mortgageParams.RemainingAmount : _installments[installmentNumber - 1].RemainingAmount;
+            var installment = _installments[installmentNumber];
+            installment.InstallmentNumber = installmentNumber + 1;
+            installment.TotalAmount = CalculateInstallment(previousRemainingAmount, _installments.Count - installmentNumber);
+            installment.InterestRepayment = CalculateInterestAmount(previousRemainingAmount);
+            installment.RemainingAmount = previousRemainingAmount - installment.CapitalRepayment;
+        }
+    }
+
+    private DateOnly GetNextInstallmentDate(DateOnly onOrAfterDate)
+    {
+        if (onOrAfterDate.Day >= _mortgageParams.LastInstallmentDate.Day)
+        {
+            var nextMonth = onOrAfterDate.AddMonths(1);
+            return new DateOnly(nextMonth.Year, nextMonth.Month, _mortgageParams.LastInstallmentDate.Day);
+        }
+        return new DateOnly(onOrAfterDate.Year, onOrAfterDate.Month, _mortgageParams.LastInstallmentDate.Day);
+    }
+
+    private decimal CalculateInstallment(decimal amount, int numberOfInstallments)
+    {
+        var interestRate = (_mortgageParams.BankMargin + _mortgageParams.BaseRate) / 100m;
+        return (amount * interestRate)
+        /
+        (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m/(12.0m + interestRate)), numberOfInstallments)));
+    }
+    private decimal CalculateInterestAmount(decimal amount)
+    {
+        var interestRate = (_mortgageParams.BankMargin + _mortgageParams.BaseRate) / 100m;
+        return (interestRate) / 12.0m * amount;
+    }
+}
