@@ -98,7 +98,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     public class Installment
     {
         public int InstallmentNumber { get; set; }
-        public int InstallmentsNumberInTime { get; set; }
+        public int NumberOfInstallmentsInTime { get; set; }
         public DateOnly Date { get; set; }
         public decimal InitialAmount { get; set; }
         public decimal RemainingAmount { set; get; }
@@ -127,7 +127,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
             {
                 return (InitialAmount * interestRate)
                        /
-                       (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m / (12.0m + interestRate)), InstallmentsNumberInTime)));
+                       (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m / (12.0m + interestRate)), NumberOfInstallmentsInTime)));
             }
         }
     }
@@ -136,22 +136,24 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     {
         _installments = new List<Installment>();
         var date = GetNextInstallmentDate(DateOnly.FromDateTime(DateTime.Now.Date));
+        var installmentsCount = 0;
         while (date <= _mortgageParams.LastInstallmentDate)
         {
             date = GetNextInstallmentDate(date);
             var installment = new Installment()
             {
-                Date = date
+                Date = date,
+                InstallmentNumber = ++installmentsCount
             };
             _installments.Add(installment);
         }
-        for (var installmentNumber = 0; installmentNumber < _installments.Count; installmentNumber++)
+        
+        foreach (var installment in _installments)
         {
-            var previousRemainingAmount = installmentNumber == 0 ? _mortgageParams.RemainingAmount : _installments[installmentNumber - 1].RemainingAmount;
-            var installment = _installments[installmentNumber];
+            var installmentIndex = installment.InstallmentNumber - 1;
+            var previousRemainingAmount = installment.InstallmentNumber == 1 ? _mortgageParams.RemainingAmount : _installments[installmentIndex - 1].RemainingAmount;
             installment.InitialAmount = previousRemainingAmount;
-            installment.InstallmentNumber = installmentNumber + 1;
-            installment.InstallmentsNumberInTime = _installments.Count - installmentNumber;
+            installment.NumberOfInstallmentsInTime = _installments.Count - installmentIndex;
             installment.BaseRate = _mortgageParams.BaseRate;
             installment.BankMargin = _mortgageParams.BankMargin;
             if (previousRemainingAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
