@@ -51,7 +51,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
                 <td>@Math.Round(installment.CapitalRepayment, 2)</td>
                 <td>@Math.Round(installment.InterestRepayment, 2)</td>
                 <td>@Math.Round(installment.TotalAmount, 2)</td>
-                <td>@Math.Round(installment.BaseRate, 2)</td>
+                <td><input @bind="installment.BaseRate" @onblur="installment.Update" type="number" /></td>
                 <td>@Math.Round(installment.BankMargin, 2)</td>
                 <td>@Math.Round(installment.RemainingAmount, 2)</td>
             </tr>
@@ -98,15 +98,38 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     public class Installment
     {
         public int InstallmentNumber { get; set; }
+        public int InstallmentsNumberInTime { get; set; }
         public DateOnly Date { get; set; }
+        public decimal InitialAmount { get; set; }
         public decimal RemainingAmount { set; get; }
         public decimal BaseRate { get; set; }
         public decimal BankMargin { get; set; }
         public decimal InterestRate => BaseRate + BankMargin;
         public decimal CapitalRepayment => TotalAmount - InterestRepayment;
-        public decimal InterestRepayment { get; set; }
 
-        public decimal TotalAmount { get; set; }
+        public decimal InterestRepayment { get; private set; }
+
+        public decimal TotalAmount { get; private set; }
+
+        public void Update()
+        {
+            var interestRate = InterestRate / 100m;
+            
+            InterestRepayment = CalculateInterestAmount();
+            TotalAmount = CalculateInstallment();
+            RemainingAmount = InitialAmount - CapitalRepayment;
+
+            decimal CalculateInterestAmount()
+            {
+                return (interestRate) / 12.0m * InitialAmount;
+            }
+            decimal CalculateInstallment()
+            {
+                return (InitialAmount * interestRate)
+                       /
+                       (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m / (12.0m + interestRate)), InstallmentsNumberInTime)));
+            }
+        }
     }
 
     private void PrepareTable()
@@ -126,16 +149,16 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
         {
             var previousRemainingAmount = installmentNumber == 0 ? _mortgageParams.RemainingAmount : _installments[installmentNumber - 1].RemainingAmount;
             var installment = _installments[installmentNumber];
+            installment.InitialAmount = previousRemainingAmount;
+            installment.InstallmentNumber = installmentNumber + 1;
+            installment.InstallmentsNumberInTime = _installments.Count - installmentNumber;
             installment.BaseRate = _mortgageParams.BaseRate;
             installment.BankMargin = _mortgageParams.BankMargin;
             if (previousRemainingAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
             {
                 installment.BankMargin += _mortgageParams.LowLtvInterestIncrease;
             }
-            installment.InstallmentNumber = installmentNumber + 1;
-            installment.TotalAmount = CalculateInstallment(previousRemainingAmount, _installments.Count - installmentNumber, installment.InterestRate);
-            installment.InterestRepayment = CalculateInterestAmount(previousRemainingAmount, installment.InterestRate);
-            installment.RemainingAmount = previousRemainingAmount - installment.CapitalRepayment;
+            installment.Update();
         }
     }
 
@@ -148,19 +171,4 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
         }
         return new DateOnly(onOrAfterDate.Year, onOrAfterDate.Month, _mortgageParams.LastInstallmentDate.Day);
     }
-
-    private decimal CalculateInstallment(decimal amount, int numberOfInstallments, decimal installmentInterestRate)
-    {
-        var interestRate = installmentInterestRate / 100m;
-        return (amount * interestRate)
-               /
-               (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m / (12.0m + interestRate)), numberOfInstallments)));
-    }
-
-    private decimal CalculateInterestAmount(decimal amount, decimal installmentInterestRate)
-    {
-        var interestRate = installmentInterestRate / 100m;
-        return (interestRate) / 12.0m * amount;
-    }
-
 }
