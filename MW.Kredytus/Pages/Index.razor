@@ -9,19 +9,19 @@ Welcome to your new app.
 <SurveyPrompt Title="How is Blazor working for you?"/>
 
 <h2>Parametry kredytu</h2>
-Pozostała kwota do spłaty: <input @bind="_mortgageParams.RemainingAmount" type="number" /><br />
-Data ostatniej raty: <input @bind="_mortgageParams.LastInstallmentDate" type="date" /><br />
-Marża banku: <input @bind="_mortgageParams.BankMargin" type="number" />%<br />
-Stopa bazowa: <input @bind="_mortgageParams.BaseRate" type="number" />%<br />
+Pozostała kwota do spłaty: <input @bind="_mortgageParams.RemainingAmount" type="number"/><br/>
+Data ostatniej raty: <input @bind="_mortgageParams.LastInstallmentDate" type="date"/><br/>
+Marża banku: <input @bind="_mortgageParams.BankMargin" type="number"/>%<br/>
+Stopa bazowa: <input @bind="_mortgageParams.BaseRate" type="number"/>%<br/>
 
 <h3>Prowizja za wcześniejszą spłatę</h3>
-Prowizja za wcześniejszą spłatę: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
-Prowizja za wcześniejszą spłatę do dnia: <input @bind="_mortgageParams.EarlyRepaymentCommissionEndDate" type="date" /><br />
+Prowizja za wcześniejszą spłatę: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number"/>%<br/>
+Prowizja za wcześniejszą spłatę do dnia: <input @bind="_mortgageParams.EarlyRepaymentCommissionEndDate" type="date"/><br/>
 
 <h3>Ubezpieczenie niskiego LTV</h3>
-Podwyższenie raty: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
-Próg LTV: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
-Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission" type="number" />%<br />
+Podwyższenie raty: <input @bind="_mortgageParams.LowLtvInterestIncrease" type="number"/>%<br/>
+Próg LTV: <input @bind="_mortgageParams.LowLtvThreshold" type="number"/>%<br/>
+Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="number"/>%<br/>
 
 <button @onclick="PrepareTable">Wygeneruj</button>
 
@@ -29,16 +29,18 @@ Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission
 {
     <p>
         Suma odsetek: @Math.Round(_installments.Sum(x => x.InterestRepayment), 2)
-    </p> 
-    
+    </p>
+
     <table>
         <thead>
-        <td>Numer raty</td>
-        <td>Data raty</td>
-        <td>Rata kapitałowa</td>
-        <td>Rata odsetkowa</td>
-        <td>Rata razem</td>
-        <td>Pozostało do spłaty</td>
+            <td>Numer raty</td>
+            <td>Data raty</td>
+            <td>Rata kapitałowa</td>
+            <td>Rata odsetkowa</td>
+            <td>Rata razem</td>
+            <td>Stopa bazowa</td>
+            <td>Marża banku</td>
+            <td>Pozostało do spłaty</td>
         </thead>
         <tbody>
         @foreach (var installment in _installments)
@@ -49,6 +51,8 @@ Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission
                 <td>@Math.Round(installment.CapitalRepayment, 2)</td>
                 <td>@Math.Round(installment.InterestRepayment, 2)</td>
                 <td>@Math.Round(installment.TotalAmount, 2)</td>
+                <td>@Math.Round(installment.BaseRate, 2)</td>
+                <td>@Math.Round(installment.BankMargin, 2)</td>
                 <td>@Math.Round(installment.RemainingAmount, 2)</td>
             </tr>
         }
@@ -58,7 +62,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission
 
 @code {
     private List<Installment> _installments = new List<Installment>();
-    
+
     private MortgageParams _mortgageParams = new MortgageParams()
     {
         RemainingAmount = 685_467,
@@ -77,15 +81,15 @@ Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission
         public decimal RemainingAmount { get; set; }
 
         public DateOnly LastInstallmentDate { get; set; }
-        
+
         public decimal BankMargin { get; set; }
-        
+
         public decimal BaseRate { get; set; }
-        
+
         public decimal EarlyRepaymentCommission { get; set; }
-        
+
         public DateOnly EarlyRepaymentCommissionEndDate { get; set; }
-        
+
         public decimal LowLtvThreshold { get; set; }
         public decimal LowLtvInterestIncrease { get; set; }
         public decimal CollateralValue { get; set; }
@@ -97,9 +101,11 @@ Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission
         public DateOnly Date { get; set; }
         public decimal RemainingAmount { set; get; }
         public decimal BaseRate { get; set; }
+        public decimal BankMargin { get; set; }
+        public decimal InterestRate => BaseRate + BankMargin;
         public decimal CapitalRepayment => TotalAmount - InterestRepayment;
         public decimal InterestRepayment { get; set; }
-        
+
         public decimal TotalAmount { get; set; }
     }
 
@@ -120,9 +126,15 @@ Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission
         {
             var previousRemainingAmount = installmentNumber == 0 ? _mortgageParams.RemainingAmount : _installments[installmentNumber - 1].RemainingAmount;
             var installment = _installments[installmentNumber];
+            installment.BaseRate = _mortgageParams.BaseRate;
+            installment.BankMargin = _mortgageParams.BankMargin;
+            if (previousRemainingAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
+            {
+                installment.BankMargin += _mortgageParams.LowLtvInterestIncrease;
+            }
             installment.InstallmentNumber = installmentNumber + 1;
-            installment.TotalAmount = CalculateInstallment(previousRemainingAmount, _installments.Count - installmentNumber);
-            installment.InterestRepayment = CalculateInterestAmount(previousRemainingAmount);
+            installment.TotalAmount = CalculateInstallment(previousRemainingAmount, _installments.Count - installmentNumber, installment.InterestRate);
+            installment.InterestRepayment = CalculateInterestAmount(previousRemainingAmount, installment.InterestRate);
             installment.RemainingAmount = previousRemainingAmount - installment.CapitalRepayment;
         }
     }
@@ -137,16 +149,18 @@ Wartość nieruchomości: <input @bind="_mortgageParams.EarlyRepaymentCommission
         return new DateOnly(onOrAfterDate.Year, onOrAfterDate.Month, _mortgageParams.LastInstallmentDate.Day);
     }
 
-    private decimal CalculateInstallment(decimal amount, int numberOfInstallments)
+    private decimal CalculateInstallment(decimal amount, int numberOfInstallments, decimal installmentInterestRate)
     {
-        var interestRate = (_mortgageParams.BankMargin + _mortgageParams.BaseRate) / 100m;
+        var interestRate = installmentInterestRate / 100m;
         return (amount * interestRate)
-        /
-        (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m/(12.0m + interestRate)), numberOfInstallments)));
+               /
+               (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m / (12.0m + interestRate)), numberOfInstallments)));
     }
-    private decimal CalculateInterestAmount(decimal amount)
+
+    private decimal CalculateInterestAmount(decimal amount, decimal installmentInterestRate)
     {
-        var interestRate = (_mortgageParams.BankMargin + _mortgageParams.BaseRate) / 100m;
+        var interestRate = installmentInterestRate / 100m;
         return (interestRate) / 12.0m * amount;
     }
+
 }
