@@ -22,13 +22,13 @@ public class Mortgage
         var installmentsCount = 0;
         while (date <= mortgageParams.LastInstallmentDate)
         {
-            date = GetNextInstallmentDate(date, mortgageParams.LastInstallmentDate);
             var installment = new Installment()
             {
                 Date = date,
                 InstallmentNumber = ++installmentsCount
             };
             result._installments.AddLast(installment);
+            date = GetNextInstallmentDate(date, mortgageParams.LastInstallmentDate);
         }
         
         result.RecalculateInstallments(result._installments.First);
@@ -57,6 +57,13 @@ public class Mortgage
         {
             var installment = currentInstallment.Value;
             installment.Update(currentInstallment.Previous?.Value, _mortgageParams, _installments.Count);
+            if (installment.RemainingAmount <= 0)
+            {
+                while (_installments.Last != currentInstallment)
+                {
+                    _installments.RemoveLast();
+                }
+            }
             currentInstallment = currentInstallment.Next;
         }
     }
@@ -82,13 +89,6 @@ public class Mortgage
             if (installment.EarlyRepaymentAmount == 0)
             {
                 installment.SetEarlyRepayment(firstInstallment - installment.TotalAmount);
-            }
-            if (installment.RemainingAmount <= 0)
-            {
-                while (_installments.Last != currentInstallment)
-                {
-                    _installments.RemoveLast();
-                }
             }
             currentInstallment = currentInstallment.Next;
         }
