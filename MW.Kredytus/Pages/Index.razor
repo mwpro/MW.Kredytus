@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components
+@using MW.Kredytus.Calculator
 
 <PageTitle>Index</PageTitle>
 
@@ -25,10 +27,10 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
 
 <button @onclick="PrepareTable">Wygeneruj</button>
 
-@if (_installments.Any())
+@if (_mortgage != null)
 {
     <p>
-        Suma odsetek: @Math.Round(_installments.Sum(x => x.InterestRepayment), 2)
+        Suma odsetek: @Math.Round(_mortgage.InterestSum)
     </p>
 
     <table>
@@ -43,7 +45,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
             <td>Pozostało do spłaty</td>
         </thead>
         <tbody>
-        @foreach (var installment in _installments)
+        @foreach (var installment in _mortgage.Installments)
         {
             <tr>
                 <td>@installment.InstallmentNumber</td>
@@ -51,7 +53,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
                 <td>@Math.Round(installment.CapitalRepayment, 2)</td>
                 <td>@Math.Round(installment.InterestRepayment, 2)</td>
                 <td>@Math.Round(installment.TotalAmount, 2)</td>
-                <td><input @bind="installment.BaseRate" @onblur="() => UpdateNextInstallmentsBaseRate(installment)" type="number" /></td>
+                <td><input @bind="installment.BaseRate" @onblur="() => _mortgage.UpdateNextInstallmentsBaseRate(installment)" type="number" /></td>
                 <td>@Math.Round(installment.BankMargin, 2)</td>
                 <td>@Math.Round(installment.RemainingAmount, 2)</td>
             </tr>
@@ -61,7 +63,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
 }
 
 @code {
-    private LinkedList<Installment> _installments = new LinkedList<Installment>();
+    private Mortgage? _mortgage;
 
     private MortgageParams _mortgageParams = new MortgageParams()
     {
@@ -95,96 +97,8 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
         public decimal CollateralValue { get; set; }
     }
 
-    public class Installment
-    {
-        public int InstallmentNumber { get; set; }
-        public int NumberOfInstallmentsInTime { get; set; }
-        public DateOnly Date { get; set; }
-        public decimal InitialAmount { get; set; }
-        public decimal RemainingAmount { set; get; }
-        public decimal BaseRate { get; set; }
-        public decimal BankMargin { get; set; }
-        public decimal InterestRate => BaseRate + BankMargin;
-        public decimal CapitalRepayment => TotalAmount - InterestRepayment;
-
-        public decimal InterestRepayment { get; private set; }
-
-        public decimal TotalAmount { get; private set; }
-
-        public void Update()
-        {
-            var interestRate = InterestRate / 100m;
-            
-            InterestRepayment = CalculateInterestAmount();
-            TotalAmount = CalculateInstallment();
-            RemainingAmount = InitialAmount - CapitalRepayment;
-
-            decimal CalculateInterestAmount()
-            {
-                return (interestRate) / 12.0m * InitialAmount;
-            }
-            decimal CalculateInstallment()
-            {
-                return (InitialAmount * interestRate)
-                       /
-                       (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m / (12.0m + interestRate)), NumberOfInstallmentsInTime)));
-            }
-        }
-    }
-
     private void PrepareTable()
     {
-        _installments = new LinkedList<Installment>();
-        var date = GetNextInstallmentDate(DateOnly.FromDateTime(DateTime.Now.Date));
-        var installmentsCount = 0;
-        while (date <= _mortgageParams.LastInstallmentDate)
-        {
-            date = GetNextInstallmentDate(date);
-            var installment = new Installment()
-            {
-                Date = date,
-                InstallmentNumber = ++installmentsCount
-            };
-            _installments.AddLast(installment);
-        }
-        
-        Update(_installments.First);
-    }
-
-    private void UpdateNextInstallmentsBaseRate(Installment firstInstallment)
-    {
-        var node = _installments.Find(firstInstallment);
-        firstInstallment.Update();
-        Update(node.Next);
-    }
-    
-    private void Update(LinkedListNode<Installment> installmentNode)
-    {
-        var currentInstallment = installmentNode;
-        while (currentInstallment != null)
-        {
-            var installment = currentInstallment.Value;
-            installment.InitialAmount = currentInstallment.Previous?.Value.RemainingAmount ?? _mortgageParams.RemainingAmount;
-            installment.NumberOfInstallmentsInTime = _installments.Count - (currentInstallment.Value.InstallmentNumber - 1);
-            installment.BaseRate = currentInstallment.Previous?.Value.BaseRate ?? _mortgageParams.BaseRate;
-            installment.BankMargin = _mortgageParams.BankMargin;
-            if (installment.InitialAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
-            {
-                installment.BankMargin += _mortgageParams.LowLtvInterestIncrease;
-            }
-            installment.Update();
-            
-            currentInstallment = currentInstallment.Next;
-        }
-    }
-
-    private DateOnly GetNextInstallmentDate(DateOnly onOrAfterDate)
-    {
-        if (onOrAfterDate.Day >= _mortgageParams.LastInstallmentDate.Day)
-        {
-            var nextMonth = onOrAfterDate.AddMonths(1);
-            return new DateOnly(nextMonth.Year, nextMonth.Month, _mortgageParams.LastInstallmentDate.Day);
-        }
-        return new DateOnly(onOrAfterDate.Year, onOrAfterDate.Month, _mortgageParams.LastInstallmentDate.Day);
+        _mortgage = Mortgage.Create(_mortgageParams);
     }
 }
