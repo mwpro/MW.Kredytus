@@ -51,7 +51,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
                 <td>@Math.Round(installment.CapitalRepayment, 2)</td>
                 <td>@Math.Round(installment.InterestRepayment, 2)</td>
                 <td>@Math.Round(installment.TotalAmount, 2)</td>
-                <td><input @bind="installment.BaseRate" @onblur="installment.Update" type="number" /></td>
+                <td><input @bind="installment.BaseRate" @onblur="() => UpdateNextInstallmentsBaseRate(installment)" type="number" /></td>
                 <td>@Math.Round(installment.BankMargin, 2)</td>
                 <td>@Math.Round(installment.RemainingAmount, 2)</td>
             </tr>
@@ -151,18 +151,24 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
         Update(_installments.First);
     }
 
+    private void UpdateNextInstallmentsBaseRate(Installment firstInstallment)
+    {
+        var node = _installments.Find(firstInstallment);
+        firstInstallment.Update();
+        Update(node.Next);
+    }
+    
     private void Update(LinkedListNode<Installment> installmentNode)
     {
         var currentInstallment = installmentNode;
         while (currentInstallment != null)
         {
             var installment = currentInstallment.Value;
-            var previousRemainingAmount = installment.InstallmentNumber == 1 ? _mortgageParams.RemainingAmount : currentInstallment.Previous.Value.RemainingAmount;
-            installment.InitialAmount = previousRemainingAmount;
+            installment.InitialAmount = currentInstallment.Previous?.Value.RemainingAmount ?? _mortgageParams.RemainingAmount;
             installment.NumberOfInstallmentsInTime = _installments.Count - (installmentNode.Value.InstallmentNumber - 1);
-            installment.BaseRate = _mortgageParams.BaseRate;
+            installment.BaseRate = currentInstallment.Previous?.Value.BaseRate ?? _mortgageParams.BaseRate;
             installment.BankMargin = _mortgageParams.BankMargin;
-            if (previousRemainingAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
+            if (installment.InitialAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
             {
                 installment.BankMargin += _mortgageParams.LowLtvInterestIncrease;
             }
