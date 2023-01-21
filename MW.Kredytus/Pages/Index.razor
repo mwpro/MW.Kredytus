@@ -165,7 +165,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
         {
             var installment = currentInstallment.Value;
             installment.InitialAmount = currentInstallment.Previous?.Value.RemainingAmount ?? _mortgageParams.RemainingAmount;
-            installment.NumberOfInstallmentsInTime = _installments.Count - (installmentNode.Value.InstallmentNumber - 1);
+            installment.NumberOfInstallmentsInTime = _installments.Count - (currentInstallment.Value.InstallmentNumber - 1);
             installment.BaseRate = currentInstallment.Previous?.Value.BaseRate ?? _mortgageParams.BaseRate;
             installment.BankMargin = _mortgageParams.BankMargin;
             if (installment.InitialAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
