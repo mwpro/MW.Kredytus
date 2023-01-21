@@ -49,14 +49,7 @@ public class Mortgage
         while (currentInstallment != null)
         {
             var installment = currentInstallment.Value;
-            installment.InitialAmount = currentInstallment.Previous?.Value.RemainingAmount ?? _mortgageParams.RemainingAmount;
-            installment.NumberOfInstallmentsInTime = _installments.Count - (currentInstallment.Value.InstallmentNumber - 1);
-            installment.BaseRate = currentInstallment.Previous?.Value.BaseRate ?? _mortgageParams.BaseRate;
-            installment.BankMargin = _mortgageParams.BankMargin;
-            if (installment.InitialAmount / _mortgageParams.CollateralValue > _mortgageParams.LowLtvThreshold)
-            {
-                installment.BankMargin += _mortgageParams.LowLtvInterestIncrease;
-            }
+            installment.Update2(currentInstallment.Previous?.Value, _mortgageParams, _installments.Count);
             installment.Update();
             
             currentInstallment = currentInstallment.Next;
