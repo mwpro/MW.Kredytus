@@ -31,7 +31,7 @@ public class Mortgage
             result._installments.AddLast(installment);
         }
         
-        result.Update(result._installments.First);
+        result.RecalculateInstallments(result._installments.First);
 
         return result;
     }
@@ -40,17 +40,16 @@ public class Mortgage
     {
         var node = _installments.Find(firstInstallment);
         node.Value.ChangeBaseRate(baseRate);
-        Update(node.Next);
+        RecalculateInstallments(node.Next);
     }
     
-    private void Update(LinkedListNode<Installment> installmentNode)
+    private void RecalculateInstallments(LinkedListNode<Installment> installmentNode)
     {
         var currentInstallment = installmentNode;
         while (currentInstallment != null)
         {
             var installment = currentInstallment.Value;
-            installment.Update2(currentInstallment.Previous?.Value, _mortgageParams, _installments.Count);
-            installment.Update();
+            installment.Update(currentInstallment.Previous?.Value, _mortgageParams, _installments.Count);
             
             currentInstallment = currentInstallment.Next;
         }

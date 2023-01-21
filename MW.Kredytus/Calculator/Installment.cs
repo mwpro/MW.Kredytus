@@ -18,7 +18,20 @@ public class Installment
 
     public decimal TotalAmount { get; private set; }
 
-    public void Update()
+    public void Update(Installment? previousInstallment, Index.MortgageParams mortgageParams, int numberOfInstallments)
+    {
+        InitialAmount = previousInstallment?.RemainingAmount ?? mortgageParams.RemainingAmount;
+        NumberOfInstallmentsInTime = numberOfInstallments - (this.InstallmentNumber - 1);
+        BaseRate = previousInstallment?.BaseRate ?? mortgageParams.BaseRate;
+        BankMargin = mortgageParams.BankMargin;
+        if (InitialAmount / mortgageParams.CollateralValue > mortgageParams.LowLtvThreshold)
+        {
+            BankMargin += mortgageParams.LowLtvInterestIncrease;
+        }
+        CalculateInstallmentAmount();
+    }
+
+    private void CalculateInstallmentAmount()
     {
         var interestRate = InterestRate / 100m;
             
@@ -37,23 +50,10 @@ public class Installment
                    (12.0m * (1.0m - (decimal)Math.Pow((double)(12.0m / (12.0m + interestRate)), NumberOfInstallmentsInTime)));
         }
     }
-    
-    public void Update2(Installment? previousInstallment, Index.MortgageParams mortgageParams, int numberOfInstallments)
-    {
-        InitialAmount = previousInstallment?.RemainingAmount ?? mortgageParams.RemainingAmount;
-        NumberOfInstallmentsInTime = numberOfInstallments - (this.InstallmentNumber - 1);
-        BaseRate = previousInstallment?.BaseRate ?? mortgageParams.BaseRate;
-        BankMargin = mortgageParams.BankMargin;
-        if (InitialAmount / mortgageParams.CollateralValue > mortgageParams.LowLtvThreshold)
-        {
-            BankMargin += mortgageParams.LowLtvInterestIncrease;
-        }
-        Update();
-    }
 
     public void ChangeBaseRate(decimal baseRate)
     {
         BaseRate = baseRate;
-        Update();
+        CalculateInstallmentAmount();
     }
 }
