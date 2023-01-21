@@ -43,6 +43,13 @@ public class Mortgage
         RecalculateInstallments(node.Next);
     }
     
+    public void MakeEarlyRepayment(decimal earlyRepaymentAmount, Installment firstInstallment)
+    {
+        var node = _installments.Find(firstInstallment);
+        node.Value.SetEarlyRepayment(earlyRepaymentAmount);
+        RecalculateInstallments(node.Next);
+    }
+    
     private void RecalculateInstallments(LinkedListNode<Installment> installmentNode)
     {
         var currentInstallment = installmentNode;
@@ -50,7 +57,6 @@ public class Mortgage
         {
             var installment = currentInstallment.Value;
             installment.Update(currentInstallment.Previous?.Value, _mortgageParams, _installments.Count);
-            
             currentInstallment = currentInstallment.Next;
         }
     }
@@ -63,5 +69,28 @@ public class Mortgage
             return new DateOnly(nextMonth.Year, nextMonth.Month, lastInstallmentDate.Day);
         }
         return new DateOnly(onOrAfterDate.Year, onOrAfterDate.Month, lastInstallmentDate.Day);
+    }
+
+    public void IncreasedRepayment()
+    {
+        var currentInstallment = _installments.First;
+        var firstInstallment = currentInstallment.Value.TotalAmount;
+        while (currentInstallment != null)
+        {
+            var installment = currentInstallment.Value;
+            installment.Update(currentInstallment.Previous?.Value, _mortgageParams, _installments.Count);
+            if (installment.EarlyRepaymentAmount == 0)
+            {
+                installment.SetEarlyRepayment(firstInstallment - installment.TotalAmount);
+            }
+            if (installment.RemainingAmount <= 0)
+            {
+                while (_installments.Last != currentInstallment)
+                {
+                    _installments.RemoveLast();
+                }
+            }
+            currentInstallment = currentInstallment.Next;
+        }
     }
 }

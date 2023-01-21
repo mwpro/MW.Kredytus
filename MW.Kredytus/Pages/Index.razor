@@ -30,6 +30,10 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
 @if (_mortgage != null)
 {
     <ChangeBaseRateModal Mortgage="_mortgage" @ref="_changeBaseRateModal" OnChange="@StateHasChanged" />
+    <EarlyRepaymentModal Mortgage="_mortgage" @ref="_earlyRepaymentModal" OnChange="@StateHasChanged" />
+    
+    <button @onclick="ApplyIncreasedRepayment">Nadpłata kredytu o różnicę raty z pierwszą ratą, tam gdzie nadpłata 0</button>
+    
     <p>
         Suma odsetek: @Math.Round(_mortgage.InterestSum)
     </p>
@@ -43,6 +47,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
             <td>Rata razem</td>
             <td>Stopa bazowa</td>
             <td>Marża banku</td>
+            <td>Wcześniejsza spłata</td>
             <td>Pozostało do spłaty</td>
             <td>Operacje</td>
         </thead>
@@ -57,9 +62,11 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
                 <td>@Math.Round(installment.TotalAmount, 2)</td>
                 <td>@installment.BaseRate</td>
                 <td>@Math.Round(installment.BankMargin, 2)</td>
+                <td>@Math.Round(installment.EarlyRepaymentAmount, 2)</td>
                 <td>@Math.Round(installment.RemainingAmount, 2)</td>
                 <td>
                     <button @onclick="() => _changeBaseRateModal.Open(installment)">Zmiana stopy bazowej</button>
+                    <button @onclick="() => _earlyRepaymentModal.Open(installment)">Wcześniejsza spłata</button>
                 </td>
             </tr>
         }
@@ -69,6 +76,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
 
 @code {
     private ChangeBaseRateModal _changeBaseRateModal;
+    private EarlyRepaymentModal _earlyRepaymentModal;
     private Mortgage? _mortgage;
 
     private MortgageParams _mortgageParams = new MortgageParams()
@@ -107,4 +115,10 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     {
         _mortgage = Mortgage.Create(_mortgageParams);
     }
+
+    private void ApplyIncreasedRepayment()
+    {
+        _mortgage.IncreasedRepayment();
+    }
+
 }

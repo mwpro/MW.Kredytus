@@ -1,0 +1,60 @@
+@using MW.Kredytus.Calculator
+
+<div class="modal @(_isOpen ? "show" : "")" tabindex="-1" role="dialog" style="display:@(_isOpen ? "block" : "none");">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Wcześniejsza spłata (zmniejszenie raty)</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Kwota wcześniejszej spłaty: <input @bind="_repaidAmount" type="number" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="Save">Zapisz</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_isOpen)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private bool _isOpen = false;
+    private decimal _repaidAmount;
+    
+    [Parameter]
+    public Mortgage Mortgage { get; set; }
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+    
+    private Installment _installment;
+
+    public void Open(Installment installment)
+    {
+        _installment = installment;
+        _isOpen = true;
+        _repaidAmount = installment.EarlyRepaymentAmount;
+        
+        StateHasChanged();
+    }
+
+    private Task Save()
+    {
+        Mortgage.MakeEarlyRepayment(_repaidAmount, _installment);
+        Close();
+        return OnChange.InvokeAsync();
+    }
+
+    public void Close()
+    {
+        _isOpen = false;
+        StateHasChanged();
+    }
+}

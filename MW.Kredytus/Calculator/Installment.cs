@@ -11,6 +11,7 @@ public class Installment
     public decimal RemainingAmount { get; private set; }
     public decimal BaseRate { get; private set; }
     public decimal BankMargin { get; private set; }
+    public decimal EarlyRepaymentAmount { get; private set; }
     public decimal InterestRate => BaseRate + BankMargin;
     public decimal CapitalRepayment => TotalAmount - InterestRepayment;
 
@@ -37,7 +38,7 @@ public class Installment
             
         InterestRepayment = CalculateInterestAmount();
         TotalAmount = CalculateInstallment();
-        RemainingAmount = InitialAmount - CapitalRepayment;
+        RemainingAmount = InitialAmount - CapitalRepayment - EarlyRepaymentAmount;
 
         decimal CalculateInterestAmount()
         {
@@ -54,6 +55,12 @@ public class Installment
     public void ChangeBaseRate(decimal baseRate)
     {
         BaseRate = baseRate;
+        CalculateInstallmentAmount();
+    }
+    
+    public void SetEarlyRepayment(decimal earlyRepaymentAmount)
+    {
+        EarlyRepaymentAmount = earlyRepaymentAmount;
         CalculateInstallmentAmount();
     }
 }
