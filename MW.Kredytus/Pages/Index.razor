@@ -29,6 +29,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
 
 @if (_mortgage != null)
 {
+    <ChangeBaseRateModal Mortgage="_mortgage" @ref="_changeBaseRateModal" OnChange="@StateHasChanged" />
     <p>
         Suma odsetek: @Math.Round(_mortgage.InterestSum)
     </p>
@@ -43,6 +44,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
             <td>Stopa bazowa</td>
             <td>Marża banku</td>
             <td>Pozostało do spłaty</td>
+            <td>Operacje</td>
         </thead>
         <tbody>
         @foreach (var installment in _mortgage.Installments)
@@ -53,9 +55,12 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
                 <td>@Math.Round(installment.CapitalRepayment, 2)</td>
                 <td>@Math.Round(installment.InterestRepayment, 2)</td>
                 <td>@Math.Round(installment.TotalAmount, 2)</td>
-                <td><input @bind="installment.BaseRate" @onblur="() => _mortgage.UpdateNextInstallmentsBaseRate(installment)" type="number" /></td>
+                <td>@installment.BaseRate</td>
                 <td>@Math.Round(installment.BankMargin, 2)</td>
                 <td>@Math.Round(installment.RemainingAmount, 2)</td>
+                <td>
+                    <button @onclick="() => _changeBaseRateModal.Open(installment)">Zmiana stopy bazowej</button>
+                </td>
             </tr>
         }
         </tbody>
@@ -63,6 +68,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
 }
 
 @code {
+    private ChangeBaseRateModal _changeBaseRateModal;
     private Mortgage? _mortgage;
 
     private MortgageParams _mortgageParams = new MortgageParams()

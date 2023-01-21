@@ -35,11 +35,11 @@ public class Mortgage
 
         return result;
     }
-    
-    public void UpdateNextInstallmentsBaseRate(Installment firstInstallment)
+
+    public void ChangeBaseRate(decimal baseRate, Installment firstInstallment)
     {
         var node = _installments.Find(firstInstallment);
-        firstInstallment.Update();
+        node.Value.ChangeBaseRate(baseRate);
         Update(node.Next);
     }
     

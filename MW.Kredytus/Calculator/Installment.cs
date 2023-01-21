@@ -5,11 +5,11 @@ namespace MW.Kredytus.Calculator;
 public class Installment
 {
     public int InstallmentNumber { get; init; }
-    public int NumberOfInstallmentsInTime { get; set; }
+    public int NumberOfInstallmentsInTime { get; private set; }
     public DateOnly Date { get; init; }
-    public decimal InitialAmount { get; set; }
+    public decimal InitialAmount { get; private set; }
     public decimal RemainingAmount { get; private set; }
-    public decimal BaseRate { get; set; }
+    public decimal BaseRate { get; private set; }
     public decimal BankMargin { get; private set; }
     public decimal InterestRate => BaseRate + BankMargin;
     public decimal CapitalRepayment => TotalAmount - InterestRepayment;
@@ -48,6 +48,12 @@ public class Installment
         {
             BankMargin += mortgageParams.LowLtvInterestIncrease;
         }
+        Update();
+    }
+
+    public void ChangeBaseRate(decimal baseRate)
+    {
+        BaseRate = baseRate;
         Update();
     }
 }
