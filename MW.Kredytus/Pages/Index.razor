@@ -35,10 +35,10 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     <button @onclick="ApplyIncreasedRepayment">Nadpłata kredytu o różnicę raty z pierwszą ratą, tam gdzie nadpłata 0</button>
     
     <p>
-        Suma odsetek: @Math.Round(_mortgage.InterestSum)
+        Suma odsetek: @Math.Round(_initialInterestSum) -> @Math.Round(_mortgage.InterestSum) (zmiana: @Math.Round(_initialInterestSum - _mortgage.InterestSum))
     </p>
     <p>
-        Ilość rat: @_mortgage.Installments.Count()
+        Ilość rat: @_initialInstallmentsNumber -> @_mortgage.Installments.Count() (zmiana: @(_initialInstallmentsNumber - _mortgage.Installments.Count()))
     </p>
 
     <table class="table table-striped">
@@ -82,6 +82,9 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     private EarlyRepaymentModal _earlyRepaymentModal;
     private Mortgage? _mortgage;
 
+    private decimal _initialInterestSum;
+    private int _initialInstallmentsNumber;
+
     private MortgageParams _mortgageParams = new MortgageParams()
     {
         RemainingAmount = 685_467,
@@ -117,6 +120,8 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     private void PrepareTable()
     {
         _mortgage = Mortgage.Create(_mortgageParams);
+        _initialInstallmentsNumber = _mortgage.Installments.Count();
+        _initialInterestSum = _mortgage.InterestSum;
     }
 
     private void ApplyIncreasedRepayment()
