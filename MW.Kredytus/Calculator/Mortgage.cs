@@ -96,6 +96,13 @@ public class Mortgage
             {
                 installment.SetEarlyRepayment(firstInstallment - installment.TotalAmount);
             }
+            if (installment.RemainingAmount <= 0)
+            {
+                while (_installments.Last != currentInstallment)
+                {
+                    _installments.RemoveLast();
+                }
+            }
             currentInstallment = currentInstallment.Next;
         }
     }
