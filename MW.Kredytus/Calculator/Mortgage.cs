@@ -52,8 +52,10 @@ public class Mortgage
     
     public void MakeEarlyRepaymentAndShortenMortgage(decimal earlyRepaymentAmount, Installment firstInstallment)
     {
-        // todo implement
-        //Math.Round(Math.Log((double)(1.0m-(installment.RemainingAmount*(installment.InterestRate/100.0m))/(installment.TotalAmount*12.0m)), (double)(12.0m/(12.0m+installment.InterestRate/100.0m))))
+        var node = _installments.Find(firstInstallment);
+        node.Value.SetEarlyRepayment(earlyRepaymentAmount);
+        node.Value.LowerNumberOfInstallments();
+        RecalculateInstallments(node.Next);
     }
     
     private void RecalculateInstallments(LinkedListNode<Installment> installmentNode)

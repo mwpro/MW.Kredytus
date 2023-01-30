@@ -22,7 +22,7 @@ public class Installment
     public void Update(Installment? previousInstallment, Index.MortgageParams mortgageParams, int numberOfInstallments)
     {
         InitialAmount = previousInstallment?.RemainingAmount ?? mortgageParams.RemainingAmount;
-        NumberOfInstallmentsInTime = numberOfInstallments - (this.InstallmentNumber - 1);
+        NumberOfInstallmentsInTime = (previousInstallment?.NumberOfInstallmentsInTime - 1) ?? numberOfInstallments;
         BaseRate = previousInstallment?.BaseRate ?? mortgageParams.BaseRate;
         BankMargin = mortgageParams.BankMargin;
         if (InitialAmount / mortgageParams.CollateralValue > mortgageParams.LowLtvThreshold)
@@ -62,5 +62,15 @@ public class Installment
     {
         EarlyRepaymentAmount = earlyRepaymentAmount;
         CalculateInstallmentAmount();
+    }
+
+    public void LowerNumberOfInstallments()
+    {
+        var installment = this;
+        var newNumberOfInstallmentsInTime = (int)Math.Round(Math.Log(
+            (double)(1.0m - (installment.RemainingAmount * (installment.InterestRate / 100.0m)) /
+                (installment.TotalAmount * 12.0m)), (double)(12.0m / (12.0m + installment.InterestRate / 100.0m))));
+        Console.WriteLine($"{NumberOfInstallmentsInTime} -> {newNumberOfInstallmentsInTime}");
+        NumberOfInstallmentsInTime = newNumberOfInstallmentsInTime;
     }
 }
