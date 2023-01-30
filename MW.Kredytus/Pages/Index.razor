@@ -37,8 +37,11 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     <p>
         Suma odsetek: @Math.Round(_mortgage.InterestSum)
     </p>
+    <p>
+        Ilość rat: @_mortgage.Installments.Count()
+    </p>
 
-    <table>
+    <table class="table table-striped">
         <thead>
             <td>Numer raty</td>
             <td>Data raty</td>
@@ -120,5 +123,4 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
     {
         _mortgage.IncreasedRepayment();
     }
-
 }

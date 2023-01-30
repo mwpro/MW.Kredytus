@@ -11,6 +11,15 @@
             </div>
             <div class="modal-body">
                 Kwota wcześniejszej spłaty: <input @bind="_repaidAmount" type="number" />
+                
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="@EarlyRepaymentMode.LowerInstallment" name="@nameof(_earlyRepaymentMode)" @onchange="()=>_earlyRepaymentMode = EarlyRepaymentMode.LowerInstallment" checked="@(_earlyRepaymentMode==EarlyRepaymentMode.LowerInstallment)">
+                  <label class="form-check-label" for="@EarlyRepaymentMode.LowerInstallment">Zmniejszenie raty</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="@EarlyRepaymentMode.ShortenMortgage" name="@nameof(_earlyRepaymentMode)" @onchange="()=>_earlyRepaymentMode = EarlyRepaymentMode.ShortenMortgage" checked="@(_earlyRepaymentMode==EarlyRepaymentMode.ShortenMortgage)">
+                  <label class="form-check-label" for="@EarlyRepaymentMode.ShortenMortgage">Skrócenie okresu kredytowania</label>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" @onclick="Save">Zapisz</button>
@@ -28,6 +37,7 @@
 @code {
     private bool _isOpen = false;
     private decimal _repaidAmount;
+    private EarlyRepaymentMode? _earlyRepaymentMode = EarlyRepaymentMode.LowerInstallment;
     
     [Parameter]
     public Mortgage Mortgage { get; set; }
@@ -41,13 +51,24 @@
         _installment = installment;
         _isOpen = true;
         _repaidAmount = installment.EarlyRepaymentAmount;
+        _earlyRepaymentMode = EarlyRepaymentMode.LowerInstallment;
         
         StateHasChanged();
     }
 
     private Task Save()
     {
-        Mortgage.MakeEarlyRepayment(_repaidAmount, _installment);
+        switch (_earlyRepaymentMode)
+        {
+            case EarlyRepaymentMode.ShortenMortgage:
+                Mortgage.MakeEarlyRepaymentAndShortenMortgage(_repaidAmount, _installment);
+                break;
+            case EarlyRepaymentMode.LowerInstallment:
+                Mortgage.MakeEarlyRepaymentAndLowerInstallments(_repaidAmount, _installment);
+                break;
+            default:
+                return Task.CompletedTask;
+        }
         Close();
         return OnChange.InvokeAsync();
     }
@@ -56,5 +77,11 @@
     {
         _isOpen = false;
         StateHasChanged();
+    }
+
+    enum EarlyRepaymentMode
+    {
+        ShortenMortgage,
+        LowerInstallment
     }
 }
