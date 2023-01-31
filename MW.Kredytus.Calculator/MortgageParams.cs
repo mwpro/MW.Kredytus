@@ -4,6 +4,7 @@ public class MortgageParams
 {
     public decimal RemainingAmount { get; set; }
 
+    public DateOnly CalculationDate { get; set; }
     public DateOnly LastInstallmentDate { get; set; }
 
     public decimal BankMargin { get; set; }

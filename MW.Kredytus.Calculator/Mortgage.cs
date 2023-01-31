@@ -16,7 +16,7 @@ public class Mortgage
     public static Mortgage Create(MortgageParams mortgageParams)
     {
         var result = new Mortgage(mortgageParams);
-        var date = GetNextInstallmentDate(DateOnly.FromDateTime(DateTime.Now.Date), mortgageParams.LastInstallmentDate);
+        var date = GetNextInstallmentDate(mortgageParams.CalculationDate, mortgageParams.LastInstallmentDate);
         var installmentsCount = 0;
         while (date <= mortgageParams.LastInstallmentDate)
         {

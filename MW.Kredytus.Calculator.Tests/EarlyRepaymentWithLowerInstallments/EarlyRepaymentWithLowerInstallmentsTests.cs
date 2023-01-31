@@ -8,6 +8,7 @@ public class EarlyRepaymentWithLowerInstallmentsTests
         var mortgageParams = new MortgageParams()
         {
             RemainingAmount = 685_467,
+            CalculationDate = new DateOnly(2023, 01, 31),
             LastInstallmentDate = new DateOnly(2052, 02, 05),
             BankMargin = 1.65m,
             BaseRate = 7.30m,
@@ -29,6 +30,7 @@ public class EarlyRepaymentWithLowerInstallmentsTests
         var mortgageParams = new MortgageParams()
         {
             RemainingAmount = 685_467,
+            CalculationDate = new DateOnly(2023, 01, 31),
             LastInstallmentDate = new DateOnly(2052, 02, 05),
             BankMargin = 1.65m,
             BaseRate = 7.30m,
@@ -50,6 +52,7 @@ public class EarlyRepaymentWithLowerInstallmentsTests
         var mortgageParams = new MortgageParams()
         {
             RemainingAmount = 685_467,
+            CalculationDate = new DateOnly(2023, 01, 31),
             LastInstallmentDate = new DateOnly(2052, 02, 05),
             BankMargin = 1.65m,
             BaseRate = 7.30m,
@@ -74,6 +77,7 @@ public class EarlyRepaymentWithLowerInstallmentsTests
         var mortgageParams = new MortgageParams()
         {
             RemainingAmount = 685_467,
+            CalculationDate = new DateOnly(2023, 01, 31),
             LastInstallmentDate = new DateOnly(2052, 02, 05),
             BankMargin = 1.65m,
             BaseRate = 7.30m,
