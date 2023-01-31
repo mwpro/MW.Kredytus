@@ -1,21 +1,19 @@
-using Index = MW.Kredytus.Pages.Index;
-
 namespace MW.Kredytus.Calculator;
 
 public class Mortgage
 {
     private readonly LinkedList<Installment> _installments = new LinkedList<Installment>();
-    private readonly Index.MortgageParams _mortgageParams;
+    private readonly MortgageParams _mortgageParams;
 
     public IEnumerable<Installment> Installments => _installments.AsEnumerable();
     public decimal InterestSum => _installments.Sum(x => x.InterestRepayment);
 
-    private Mortgage(Index.MortgageParams mortgageParams)
+    private Mortgage(MortgageParams mortgageParams)
     {
         _mortgageParams = mortgageParams;
     }
 
-    public static Mortgage Create(Index.MortgageParams mortgageParams)
+    public static Mortgage Create(MortgageParams mortgageParams)
     {
         var result = new Mortgage(mortgageParams);
         var date = GetNextInstallmentDate(DateOnly.FromDateTime(DateTime.Now.Date), mortgageParams.LastInstallmentDate);

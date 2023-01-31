@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MW.Kredytus", "MW.Kredytus\MW.Kredytus.csproj", "{015B9BC5-72FF-4D5F-81A4-25B90BBD9343}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MW.Kredytus.Calculator", "MW.Kredytus.Calculator\MW.Kredytus.Calculator.csproj", "{08017AA3-B9AD-451E-9BBF-51DD721519D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MW.Kredytus.Calculator.Tests", "MW.Kredytus.Calculator.Tests\MW.Kredytus.Calculator.Tests.csproj", "{64EC6F59-C850-4E90-A085-8AFACF4BE695}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{015B9BC5-72FF-4D5F-81A4-25B90BBD9343}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{015B9BC5-72FF-4D5F-81A4-25B90BBD9343}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{015B9BC5-72FF-4D5F-81A4-25B90BBD9343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08017AA3-B9AD-451E-9BBF-51DD721519D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08017AA3-B9AD-451E-9BBF-51DD721519D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08017AA3-B9AD-451E-9BBF-51DD721519D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08017AA3-B9AD-451E-9BBF-51DD721519D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64EC6F59-C850-4E90-A085-8AFACF4BE695}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64EC6F59-C850-4E90-A085-8AFACF4BE695}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64EC6F59-C850-4E90-A085-8AFACF4BE695}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64EC6F59-C850-4E90-A085-8AFACF4BE695}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

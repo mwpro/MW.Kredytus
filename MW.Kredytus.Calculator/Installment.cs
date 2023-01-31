@@ -1,5 +1,3 @@
-using Index = MW.Kredytus.Pages.Index;
-
 namespace MW.Kredytus.Calculator;
 
 public class Installment
@@ -19,7 +17,7 @@ public class Installment
 
     public decimal TotalAmount { get; private set; }
 
-    public void Update(Installment? previousInstallment, Index.MortgageParams mortgageParams, int numberOfInstallments)
+    public void Update(Installment? previousInstallment, MortgageParams mortgageParams, int numberOfInstallments)
     {
         InitialAmount = previousInstallment?.RemainingAmount ?? mortgageParams.RemainingAmount;
         NumberOfInstallmentsInTime = (previousInstallment?.NumberOfInstallmentsInTime - 1) ?? numberOfInstallments;

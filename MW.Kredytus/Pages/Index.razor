@@ -98,25 +98,6 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
         CollateralValue = 760_000m
     };
 
-    public class MortgageParams
-    {
-        public decimal RemainingAmount { get; set; }
-
-        public DateOnly LastInstallmentDate { get; set; }
-
-        public decimal BankMargin { get; set; }
-
-        public decimal BaseRate { get; set; }
-
-        public decimal EarlyRepaymentCommission { get; set; }
-
-        public DateOnly EarlyRepaymentCommissionEndDate { get; set; }
-
-        public decimal LowLtvThreshold { get; set; }
-        public decimal LowLtvInterestIncrease { get; set; }
-        public decimal CollateralValue { get; set; }
-    }
-
     private void PrepareTable()
     {
         _mortgage = Mortgage.Create(_mortgageParams);
