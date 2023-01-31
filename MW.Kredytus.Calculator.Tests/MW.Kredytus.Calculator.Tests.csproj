@@ -17,7 +17,7 @@
         <PackageReference Include="coverlet.collector" Version="3.1.2" />
         <PackageReference Include="Verify.NUnit" Version="19.8.0" />
     </ItemGroup>
-
+    
     <ItemGroup>
       <ProjectReference Include="..\MW.Kredytus.Calculator\MW.Kredytus.Calculator.csproj" />
     </ItemGroup>
