@@ -21,9 +21,4 @@
     <ItemGroup>
       <ProjectReference Include="..\MW.Kredytus.Calculator\MW.Kredytus.Calculator.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="InitialMortgageCalculationTests.SimpleMortgageWith.verified.txt" />
-    </ItemGroup>
-
 </Project>

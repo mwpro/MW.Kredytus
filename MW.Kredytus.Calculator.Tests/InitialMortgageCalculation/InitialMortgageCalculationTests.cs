@@ -1,4 +1,4 @@
-namespace MW.Kredytus.Calculator.Tests;
+namespace MW.Kredytus.Calculator.Tests.InitialMortgageCalculation;
 
 public class InitialMortgageCalculationTests
 {
