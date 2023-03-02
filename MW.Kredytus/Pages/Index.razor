@@ -13,6 +13,7 @@ Welcome to your new app.
 <h2>Parametry kredytu</h2>
 Pozostała kwota do spłaty: <input @bind="_mortgageParams.RemainingAmount" type="number"/><br/>
 Data ostatniej raty: <input @bind="_mortgageParams.LastInstallmentDate" type="date"/><br/>
+Karencja w spłacie kapitału: <input @bind="_mortgageParams.CapitalRepaymentGracePeriodEndDate" type="date"/><br/>
 Marża banku: <input @bind="_mortgageParams.BankMargin" type="number"/>%<br/>
 Stopa bazowa: <input @bind="_mortgageParams.BaseRate" type="number"/>%<br/>
 
@@ -60,7 +61,7 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
             <tr>
                 <td>@installment.InstallmentNumber</td>
                 <td>@installment.Date</td>
-                <td>@Math.Round(installment.CapitalRepayment, 2)</td>
+                <td>@Math.Round(installment.CapitalRepayment, 2) @(installment.IsWithinCapitalRepaymentGracePeriod ? "✋" : "")</td>
                 <td>@Math.Round(installment.InterestRepayment, 2)</td>
                 <td>@Math.Round(installment.TotalAmount, 2)</td>
                 <td>@installment.BaseRate</td>
@@ -90,8 +91,9 @@ Wartość nieruchomości: <input @bind="_mortgageParams.CollateralValue" type="n
         RemainingAmount = 685_467,
         CalculationDate = DateOnly.FromDateTime(DateTime.Now.Date),
         LastInstallmentDate = new DateOnly(2052, 02, 05),
+        CapitalRepaymentGracePeriodEndDate = new DateOnly(2023, 09, 04),
         BankMargin = 1.65m,
-        BaseRate = 7.30m,
+        BaseRate = 7.00m,
         EarlyRepaymentCommission = 2.0m,
         EarlyRepaymentCommissionEndDate = new DateOnly(2024, 10, 07),
         LowLtvThreshold = 0.8m,

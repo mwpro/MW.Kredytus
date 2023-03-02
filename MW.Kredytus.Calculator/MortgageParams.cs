@@ -6,6 +6,7 @@ public class MortgageParams
 
     public DateOnly CalculationDate { get; set; }
     public DateOnly LastInstallmentDate { get; set; }
+    public DateOnly CapitalRepaymentGracePeriodEndDate { get; set; }
 
     public decimal BankMargin { get; set; }
 

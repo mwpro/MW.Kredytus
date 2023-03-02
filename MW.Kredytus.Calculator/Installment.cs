@@ -5,6 +5,7 @@ public class Installment
     public int InstallmentNumber { get; init; }
     public int NumberOfInstallmentsInTime { get; private set; }
     public DateOnly Date { get; init; }
+    public bool IsWithinCapitalRepaymentGracePeriod { get; private set; }
     public decimal InitialAmount { get; private set; }
     public decimal RemainingAmount { get; private set; }
     public decimal BaseRate { get; private set; }
@@ -23,6 +24,7 @@ public class Installment
         NumberOfInstallmentsInTime = (previousInstallment?.NumberOfInstallmentsInTime - 1) ?? numberOfInstallments;
         BaseRate = previousInstallment?.BaseRate ?? mortgageParams.BaseRate;
         BankMargin = mortgageParams.BankMargin;
+        IsWithinCapitalRepaymentGracePeriod = Date < mortgageParams.CapitalRepaymentGracePeriodEndDate;
         if (InitialAmount / mortgageParams.CollateralValue > mortgageParams.LowLtvThreshold)
         {
             BankMargin += mortgageParams.LowLtvInterestIncrease;
@@ -33,10 +35,19 @@ public class Installment
     private void CalculateInstallmentAmount()
     {
         var interestRate = InterestRate / 100m;
-            
-        InterestRepayment = CalculateInterestAmount();
-        TotalAmount = CalculateInstallment();
-        RemainingAmount = InitialAmount - CapitalRepayment - EarlyRepaymentAmount;
+
+        if (IsWithinCapitalRepaymentGracePeriod)
+        {
+            InterestRepayment = CalculateInterestAmount();
+            TotalAmount = InterestRepayment;
+            RemainingAmount = InitialAmount - CapitalRepayment - EarlyRepaymentAmount;
+        }
+        else
+        {
+            InterestRepayment = CalculateInterestAmount();
+            TotalAmount = CalculateInstallment();
+            RemainingAmount = InitialAmount - CapitalRepayment - EarlyRepaymentAmount;
+        }
 
         decimal CalculateInterestAmount()
         {
