@@ -96,4 +96,23 @@ public class EarlyRepaymentWithShorterMortgageTests
         });
         mortgage.InterestSum.Should().BeApproximately(totalInterestBeforeRepayment - 116_764.26m, 1000m);
     }
+    
+    [Test]
+    public void DivideByZeroBug()
+    {
+        var mortgageParams = new MortgageParams()
+        {
+            RemainingAmount = 685_467,
+            CalculationDate = new DateOnly(2023, 03, 02),
+            LastInstallmentDate = new DateOnly(2052, 02, 05),
+            BankMargin = 1.65m,
+            BaseRate = 7.00m,
+            CollateralValue = 760_000m
+        };
+        var mortgage = Mortgage.Create(mortgageParams);
+        var firstInstallment = mortgage.Installments.First();
+        
+        mortgage.Invoking(x => x.MakeEarlyRepaymentAndShortenMortgage(10_000, firstInstallment))
+            .Should().NotThrow<DivideByZeroException>();
+    }
 }

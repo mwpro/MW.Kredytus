@@ -63,7 +63,7 @@ public class Mortgage
         {
             var installment = currentInstallment.Value;
             installment.Update(currentInstallment.Previous?.Value, _mortgageParams, _installments.Count);
-            if (installment.RemainingAmount <= 0)
+            if (installment.RemainingAmount <= 0.01m)
             {
                 while (_installments.Last != currentInstallment)
                 {
@@ -96,7 +96,7 @@ public class Mortgage
             {
                 installment.SetEarlyRepayment(firstInstallment - installment.TotalAmount);
             }
-            if (installment.RemainingAmount <= 0)
+            if (installment.RemainingAmount <= 0.01m)
             {
                 while (_installments.Last != currentInstallment)
                 {
