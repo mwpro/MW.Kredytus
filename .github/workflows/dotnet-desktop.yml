@@ -1,0 +1,32 @@
+name: DeployToGitHubPages
+env:
+  PUBLISH_DIR: release
+
+# Controls when the action will run
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Publish app
+      run: dotnet publish -c Release -o ${{ env.PUBLISH_DIR }} MW.Kredytus/MW.Kredytus.csproj
+
+    - name: Rewrite base href
+      uses: SteveSandersonMS/ghaction-rewrite-base-href@v1
+      with:
+        html_path: ${{ env.PUBLISH_DIR }}/wwwroot/index.html
+        base_href: /mw-kredytus/
+
+    - name: GitHub Pages
+      if: success()
+      uses: crazy-max/ghaction-github-pages@v1.5.1
+      with:
+        target_branch: gh-pages
+        build_dir: ${{ env.PUBLISH_DIR }}/wwwroot
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
