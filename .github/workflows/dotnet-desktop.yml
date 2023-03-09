@@ -23,7 +23,7 @@ jobs:
       uses: SteveSandersonMS/ghaction-rewrite-base-href@v1
       with:
         html_path: ${{ env.PUBLISH_DIR }}/wwwroot/index.html
-        base_href: /mw-kredytus/
+        base_href: /MW.Kredytus/
 
     - name: GitHub Pages
       if: success()
