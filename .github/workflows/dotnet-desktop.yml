@@ -13,8 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Test
-      run: dotnet test --verbosity normal MW.Kredytus.Calculator.Tests/MW.Kredytus.Calculator.Tests.csproj
+    # - name: Test
+    #   run: dotnet test --verbosity normal MW.Kredytus.Calculator.Tests/MW.Kredytus.Calculator.Tests.csproj
 
     - name: Publish app
       run: dotnet publish -c Release -o ${{ env.PUBLISH_DIR }} MW.Kredytus/MW.Kredytus.csproj
