@@ -8,7 +8,7 @@ public class Installment
     public bool IsWithinCapitalRepaymentGracePeriod { get; private set; }
     public decimal InitialAmount { get; private set; }
     public decimal RemainingAmount { get; private set; }
-    public decimal BaseRate { get; private set; }
+    public decimal BaseRate { get; set; }
     public decimal BankMargin { get; private set; }
     public decimal EarlyRepaymentAmount { get; private set; }
     public decimal InterestRate => BaseRate + BankMargin;
@@ -22,7 +22,6 @@ public class Installment
     {
         InitialAmount = previousInstallment?.RemainingAmount ?? mortgageParams.RemainingAmount;
         NumberOfInstallmentsInTime = (previousInstallment?.NumberOfInstallmentsInTime - 1) ?? numberOfInstallments;
-        BaseRate = previousInstallment?.BaseRate ?? mortgageParams.BaseRate;
         BankMargin = mortgageParams.BankMargin;
         IsWithinCapitalRepaymentGracePeriod = Date < mortgageParams.CapitalRepaymentGracePeriodEndDate;
         if (InitialAmount / mortgageParams.CollateralValue > mortgageParams.LowLtvThreshold)
@@ -64,7 +63,6 @@ public class Installment
     public void ChangeBaseRate(decimal baseRate)
     {
         BaseRate = baseRate;
-        CalculateInstallmentAmount();
     }
     
     public void SetEarlyRepayment(decimal earlyRepaymentAmount)
@@ -79,7 +77,6 @@ public class Installment
         var newNumberOfInstallmentsInTime = (int)Math.Round(Math.Log(
             (double)(1.0m - (installment.RemainingAmount * (installment.InterestRate / 100.0m)) /
                 (installment.TotalAmount * 12.0m)), (double)(12.0m / (12.0m + installment.InterestRate / 100.0m))));
-        Console.WriteLine($"{NumberOfInstallmentsInTime} -> {newNumberOfInstallmentsInTime}");
         NumberOfInstallmentsInTime = newNumberOfInstallmentsInTime;
     }
 }

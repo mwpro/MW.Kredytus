@@ -23,7 +23,8 @@ public class Mortgage
             var installment = new Installment()
             {
                 Date = date,
-                InstallmentNumber = ++installmentsCount
+                InstallmentNumber = ++installmentsCount,
+                BaseRate = mortgageParams.BaseRate
             };
             result._installments.AddLast(installment);
             date = GetNextInstallmentDate(date, mortgageParams.LastInstallmentDate);
@@ -36,9 +37,14 @@ public class Mortgage
 
     public void ChangeBaseRate(decimal baseRate, Installment firstInstallment)
     {
-        var node = _installments.Find(firstInstallment);
-        node.Value.ChangeBaseRate(baseRate);
-        RecalculateInstallments(node.Next);
+        var firstInstallmentNode = _installments.Find(firstInstallment);
+        var node = firstInstallmentNode;
+        while (node != null)
+        {
+            node.Value.ChangeBaseRate(baseRate);
+            node = node.Next;
+        }
+        RecalculateInstallments(firstInstallmentNode);
     }
     
     public void MakeEarlyRepaymentAndLowerInstallments(decimal earlyRepaymentAmount, Installment firstInstallment)
